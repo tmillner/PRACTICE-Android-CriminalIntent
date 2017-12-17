@@ -9,7 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 import java.util.UUID;
-
+/* Decomissioned see CrimePagerActivity
 public class CriminalActivity extends SingleFragmentActivity {
 
 
@@ -27,3 +27,4 @@ public class CriminalActivity extends SingleFragmentActivity {
         return CrimeFragment.newInstance(crimeId);
     }
 }
+*/
