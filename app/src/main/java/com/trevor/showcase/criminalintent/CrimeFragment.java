@@ -1,6 +1,8 @@
 package com.trevor.showcase.criminalintent;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -14,6 +16,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 
+import java.util.Date;
 import java.util.UUID;
 
 
@@ -44,6 +47,10 @@ public class CrimeFragment extends Fragment {
     private Button mCrimeTimestampButton;
 
     private static final String ARG_BUNDLE_CRIME_ID = "crime_id";
+    private static final String DATE_PICKER_DIALOG_TAG = "DatePickerDialog";
+
+    private static final int REQUEST_DATE = 0;
+
 
     public CrimeFragment() {
         // Required empty public constructor
@@ -128,10 +135,38 @@ public class CrimeFragment extends Fragment {
         });
 
         mCrimeTimestampButton = v.findViewById(R.id.crime_timestamp_button);
-        mCrimeTimestampButton.setText(mCrime.getCrimeDate().toString());
-        mCrimeTimestampButton.setEnabled(false);
+        updateDate();
+        mCrimeTimestampButton.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View view) {
+                DatePickerFragment datePickerDialogFragment = DatePickerFragment.newInstance(
+                        mCrime.getCrimeDate()
+                );
+                datePickerDialogFragment.setTargetFragment(CrimeFragment.this, REQUEST_DATE);
+                datePickerDialogFragment.show(getFragmentManager(), DATE_PICKER_DIALOG_TAG);
+            }
+        });
 
         return v;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data){
+        if (resultCode != Activity.RESULT_OK) {
+            return;
+        }
+
+        if (requestCode == REQUEST_DATE) {
+            Date date = (Date) data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
+            mCrime.setCrimeDate(date);
+            updateDate();
+        }
+    }
+
+    private void updateDate() {
+        mCrimeTimestampButton.setText(mCrime.getCrimeDate().toString());
+
     }
 
     // TODO: Rename method, update argument and hook method into UI event
