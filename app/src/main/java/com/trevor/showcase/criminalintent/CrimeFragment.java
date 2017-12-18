@@ -151,6 +151,15 @@ public class CrimeFragment extends Fragment {
         return v;
     }
 
+    //  This is used to persist crime as oppose to just set it in this activity and lose it
+    // on a transition
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        CrimeLab.get(getActivity()).updateCrime(mCrime);
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data){
         if (resultCode != Activity.RESULT_OK) {
