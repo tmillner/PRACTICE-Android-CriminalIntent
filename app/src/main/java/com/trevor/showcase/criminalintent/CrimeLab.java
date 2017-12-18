@@ -17,12 +17,10 @@ public class CrimeLab {
 
     private CrimeLab(Context context) {
         mCrimes = new ArrayList<>();
-        for(int i = 0; i<100; i++) {
-            Crime newCrime = new Crime();
-            newCrime.setTitle("Crime #" + i);
-            newCrime.setCrimeSolved(i % 2 == 0);
-            mCrimes.add(newCrime);
-        }
+    }
+
+    public void addCrime(Crime crime) {
+        mCrimes.add(crime);
     }
 
     // Not yet sure why context is passed in...

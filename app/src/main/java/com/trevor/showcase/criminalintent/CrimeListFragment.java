@@ -10,6 +10,9 @@ import android.text.Editable;
 import android.text.Layout;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
@@ -71,6 +74,18 @@ public class CrimeListFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater menuInflater) {
+        super.onCreateOptionsMenu(menu, menuInflater);
+        menuInflater.inflate(R.menu.fragment_crime_list, menu);
+    }
+
     private class CrimeHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
         private Crime mCrime;
@@ -101,6 +116,20 @@ public class CrimeListFragment extends Fragment {
             Intent intent = CrimePagerActivity.newIntent(getActivity(), mCrime.getUUID());
             startActivity(intent);
             //Toast.makeText(getActivity(), "" + mCrime.getTitle() + " clicked", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem menuItem) {
+        switch(menuItem.getItemId()) {
+            case(R.id.menu_item_new_crime):
+                Crime crime = new Crime();
+                CrimeLab.get(getActivity()).addCrime(crime);
+                Intent intent = CrimePagerActivity.newIntent(getActivity(), crime.getUUID());
+                startActivity(intent);
+                return true;
+            default:
+                return super.onOptionsItemSelected(menuItem);
         }
     }
 
