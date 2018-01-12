@@ -29,9 +29,9 @@ public class CrimeLab {
         ContentValues contentValues = new ContentValues();
         contentValues.put(CrimeTable.Columns.TITLE, crime.getTitle());
         contentValues.put(CrimeTable.Columns.UUID, crime.getUUID().toString());
+        contentValues.put(CrimeTable.Columns.SUSPECT, crime.getCrimeSuspect());
         contentValues.put(CrimeTable.Columns.SOLVED, crime.isCrimeSolved() ? 1 : 0);
         contentValues.put(CrimeTable.Columns.DATE, crime.getCrimeDate().getTime());
-
 
         return contentValues;
     }

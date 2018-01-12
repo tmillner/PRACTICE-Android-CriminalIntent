@@ -3,11 +3,16 @@ package com.trevor.showcase.criminalintent;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.ShareCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,11 +41,14 @@ public class CrimeFragment extends Fragment {
     private EditText mEditCrimeText;
     private CheckBox mCrimeCheckbox;
     private Button mCrimeTimestampButton;
+    private Button mCrimeSuspectButton;
+    private Button mSendReportButton;
 
     private static final String ARG_BUNDLE_CRIME_ID = "crime_id";
     private static final String DATE_PICKER_DIALOG_TAG = "DatePickerDialog";
 
     private static final int REQUEST_DATE = 0;
+    private static final int REQUEST_SUSPECT_FROM_CONTACTS = 1;
 
 
     public CrimeFragment() {
@@ -139,6 +147,48 @@ public class CrimeFragment extends Fragment {
             }
         });
 
+        mSendReportButton = v.findViewById(R.id.send_crime_report_button);
+        mSendReportButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Instead of the below can use ShareCompat.IntentBuilder builder to
+                // create intent
+                Intent intent = new Intent(Intent.ACTION_SEND);
+                intent.setType("text/plain");
+                intent.putExtra(Intent.EXTRA_TEXT, getCrimeReport());
+                intent.putExtra(Intent.EXTRA_SUBJECT, R.string.crime_report_suspect);
+
+                Intent intentWithChooser = Intent.createChooser(
+                        intent, getString(R.string.send_crime_report));
+                startActivity(intentWithChooser);
+            }
+        });
+
+        final Intent pickContactIntent = new Intent(Intent.ACTION_PICK,
+                ContactsContract.Contacts.CONTENT_URI);
+        // Test the logic for if pickContactIntent is found on device actually disabled
+        // pickContactIntent.addCategory(Intent.CATEGORY_HOME);
+
+        mCrimeSuspectButton = v.findViewById(R.id.choose_suspect_button);
+        mCrimeSuspectButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivityForResult(pickContactIntent, REQUEST_SUSPECT_FROM_CONTACTS);
+            }
+        });
+
+        PackageManager packageManager = getActivity().getPackageManager();
+        if (packageManager.resolveActivity(pickContactIntent, PackageManager.MATCH_DEFAULT_ONLY)
+                == null) {
+            mCrimeSuspectButton.setEnabled(false);
+        }
+
+        // This should be set when coming back from a pickContactIntent (onActivityResult)
+        // If we rotate or by default launch, this needs to be set.
+        if(mCrime.getCrimeSuspect() != null) {
+            mCrimeSuspectButton.setText(mCrime.getCrimeSuspect());
+        }
+
         return v;
     }
 
@@ -162,10 +212,55 @@ public class CrimeFragment extends Fragment {
             mCrime.setCrimeDate(date);
             updateDate();
         }
+        else if (requestCode == REQUEST_SUSPECT_FROM_CONTACTS && data != null) {
+            Uri contactUri = data.getData();
+
+            String[] queryFields = new String[] { ContactsContract.Contacts.DISPLAY_NAME };
+
+            Cursor c = getActivity().getContentResolver().query(contactUri, queryFields,
+                    null, null, null);
+
+            try {
+                // pull first column out of first row of data (we only projected 1 column)
+                c.moveToFirst();
+                String crimeSuspect = c.getString(0);
+                mCrime.setCrimeSuspect(crimeSuspect);
+                mCrimeSuspectButton.setText(crimeSuspect);
+            }
+            finally {
+                c.close();
+            }
+        }
     }
 
     private void updateDate() {
         mCrimeTimestampButton.setText(mCrime.getCrimeDate().toString());
 
+    }
+
+    private String getCrimeReport() {
+        String crimeSolvedText;
+        if (mCrime.isCrimeSolved()) {
+            crimeSolvedText = getString(R.string.crime_report_solved);
+        }
+        else {
+            crimeSolvedText = getString(R.string.crime_report_unsolved);
+        }
+
+        String dateFormat = "EEE, MMM dd";
+        String dateString = DateFormat.format(dateFormat, mCrime.getCrimeDate()).toString();
+
+        String crimeSuspectText;
+        if (mCrime.getCrimeSuspect() == null) {
+            crimeSuspectText = getString(R.string.crime_report_no_suspect);
+        }
+        else {
+            crimeSuspectText = getString(R.string.crime_report_suspect);
+        }
+
+        String report = getString(R.string.crime_report, mCrime.getTitle(),
+                dateString, crimeSolvedText, crimeSuspectText);
+
+        return report;
     }
 }

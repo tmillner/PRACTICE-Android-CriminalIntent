@@ -42,4 +42,20 @@
         android:layout_marginRight="10dp"
         android:text="@string/crime_solved_checkbox" />
 
+    <Button
+        android:id="@+id/choose_suspect_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:text="@string/choose_suspect"/>
+
+    <Button
+        android:id="@+id/send_crime_report_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:text="@string/crime_report_text"/>
+
 </LinearLayout>
