@@ -5,20 +5,8 @@
     android:orientation="vertical"
     tools:context="com.trevor.showcase.criminalintent.CrimeFragment">
 
-    <TextView
-        style="?android:listSeparatorTextViewStyle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/crime_title_indicator" />
 
-    <EditText
-        android:id="@+id/crime_title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:hint="@string/crime_title_hint"
-        android:padding="10dp" />
+    <include layout="@layout/view_camera_and_title"></include>
 
     <TextView
         style="?android:listSeparatorTextViewStyle"

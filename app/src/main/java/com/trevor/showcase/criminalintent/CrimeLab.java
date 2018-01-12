@@ -5,20 +5,24 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.CursorWrapper;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Environment;
 
 import com.trevor.showcase.criminalintent.database.CrimeBaseHelper;
 import com.trevor.showcase.criminalintent.database.CrimeCursorWrapper;
 import com.trevor.showcase.criminalintent.database.CrimeDbSchema;
 import com.trevor.showcase.criminalintent.database.CrimeDbSchema.CrimeTable;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 /**
  * Created by trevormillner on 12/16/17.
+ *
+ * This class is responsible for persisting all crimes
+ * (like a controller in front of the model)
  */
-
 public class CrimeLab {
 
     private static CrimeLab sCrimeLab;
@@ -36,9 +40,18 @@ public class CrimeLab {
         return contentValues;
     }
 
+
     private CrimeLab(Context context) {
         mContext = context.getApplicationContext();
         mDatabase = new CrimeBaseHelper(mContext).getWritableDatabase();
+    }
+
+    public File getPhotoFile(Crime crime) {
+        File externalFilesDir = mContext.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+
+        if (externalFilesDir == null) return null;
+
+        return new File(externalFilesDir, crime.getPhotoFilename());
     }
 
     public void addCrime(Crime crime) {

@@ -5,9 +5,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.Picture;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.ShareCompat;
 import android.text.Editable;
@@ -20,7 +23,10 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 
+import java.io.File;
 import java.util.Date;
 import java.util.UUID;
 
@@ -43,12 +49,17 @@ public class CrimeFragment extends Fragment {
     private Button mCrimeTimestampButton;
     private Button mCrimeSuspectButton;
     private Button mSendReportButton;
+    private ImageView mPhotoView;
+    private ImageButton mPhotoButton;
+    private File mPhoto;
+
 
     private static final String ARG_BUNDLE_CRIME_ID = "crime_id";
     private static final String DATE_PICKER_DIALOG_TAG = "DatePickerDialog";
 
     private static final int REQUEST_DATE = 0;
     private static final int REQUEST_SUSPECT_FROM_CONTACTS = 1;
+    private static final int REQUEST_PHOTO = 2;
 
 
     public CrimeFragment() {
@@ -96,6 +107,8 @@ public class CrimeFragment extends Fragment {
         if (getArguments() != null) {
             mCrime = CrimeLab.get(getActivity()).getCrime((UUID)
                     getArguments().getSerializable(ARG_BUNDLE_CRIME_ID));
+
+            mPhoto = CrimeLab.get(getActivity()).getPhotoFile(mCrime);
         }
     }
 
@@ -189,6 +202,26 @@ public class CrimeFragment extends Fragment {
             mCrimeSuspectButton.setText(mCrime.getCrimeSuspect());
         }
 
+        final Intent takePhotoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        Boolean canTakePhoto = mPhoto != null &&
+                takePhotoIntent.resolveActivity(packageManager) != null;
+        mPhotoButton = v.findViewById(R.id.crime_camera_image_button);
+        mPhotoButton.setEnabled(canTakePhoto);
+
+        if (canTakePhoto) {
+            Uri uri = Uri.fromFile(mPhoto);
+            takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+        }
+        mPhotoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivityForResult(takePhotoIntent, REQUEST_PHOTO);
+            }
+        });
+
+        mPhotoView = v.findViewById(R.id.crime_image_photo_view);
+        updatePhotoView();
+
         return v;
     }
 
@@ -231,11 +264,27 @@ public class CrimeFragment extends Fragment {
                 c.close();
             }
         }
+        // Technically we don't need the null check since we fire the intent with a
+        // EXTRA_OUTPUT which causes data to be stored there, this updatePhotoView method
+        // will do the right thing (read the location for data as was set from firing intent)
+        else if (requestCode == REQUEST_PHOTO && data != null) {
+            updatePhotoView();
+        }
     }
 
     private void updateDate() {
         mCrimeTimestampButton.setText(mCrime.getCrimeDate().toString());
 
+    }
+
+    private void updatePhotoView() {
+        if (mPhoto == null || !mPhoto.exists()) {
+            mPhotoView.setImageDrawable(null);
+        }
+        else {
+            Bitmap bitmap = PictureUtils.getScaledBitmap(mPhoto.getPath(), getActivity());
+            mPhotoView.setImageBitmap(bitmap);
+        }
     }
 
     private String getCrimeReport() {

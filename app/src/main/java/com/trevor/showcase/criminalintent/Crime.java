@@ -63,4 +63,8 @@ public class Crime {
     public void setUUID(UUID UUID) {
         mUUID = UUID;
     }
+
+    public String getPhotoFilename() {
+        return "IMG_" + getUUID() + ".jpg";
+    }
 }
